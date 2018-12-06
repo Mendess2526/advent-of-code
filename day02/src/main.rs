@@ -57,8 +57,7 @@ fn get_common(a :&str, b :&str) -> String {
 fn main() -> std::io::Result<()> {
     let (x,y) = BufReader::new(File::open("input")?)
         .lines()
-        .filter(|x| x.is_ok())
-        .map(|x| x.unwrap())
+        .filter_map(|x| x.ok())
         .fold((0,0), |acc, x| add_pairs(acc, count(&x)));
     println!("{}", x * y);
 
