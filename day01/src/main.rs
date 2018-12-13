@@ -3,25 +3,24 @@ use std::io::BufReader;
 use std::io::BufRead;
 use std::collections::HashSet;
 
-fn get_changes(f :File) -> Vec<i32> {
-    BufReader::new(f)
-        .lines()
-        .filter(|x| x.is_ok())
-        .map(|x| x.unwrap().parse::<i32>().unwrap())
-        .collect()
-}
-
 fn main() -> std::io::Result<()>{
     let mut freq :i32 = 0;
-    let mut freqs = HashSet::new();
-    for c in get_changes(File::open("input")?).iter().cycle() {
-        freq += c;
-        if freqs.contains(&freq) {
-            break;
-        }else{
-            freqs.insert(freq);
-        }
-    }
+    BufReader::new(File::open("input")?)
+        .lines()
+        .filter_map(|x| x.ok())
+        .map(|x| x.parse::<i32>().unwrap())
+        .collect::<Vec<_>>()
+        .iter()
+        .cycle()
+        .try_fold(HashSet::new(), |mut freqs, c| {
+            freq += c;
+            if freqs.contains(&freq) {
+                None
+            }else{
+                freqs.insert(freq);
+                Some(freqs)
+            }
+        });
     println!("Freq: {}", freq);
     Ok(())
 }
