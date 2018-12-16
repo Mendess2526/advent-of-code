@@ -38,14 +38,6 @@ impl From<(i16,i16)> for Dot {
 }
 
 impl Dot {
-    fn zero((x,y) :(i16,i16)) -> Self {
-        Dot{
-            id: 0 as char,
-            x,
-            y,
-            extreme: false,
-        }
-    }
     fn fst_quad(&self, target :&(i16,i16)) -> bool {
         self.x > target.0 && self.y < target.1
     }
@@ -83,7 +75,7 @@ fn closest(p :(i16,i16), dots :&[Dot]) -> Option<&Dot> {
     sorted_dots.sort_unstable_by_key(|d| d.1);
     sorted_dots.reverse();
     let (closest, c_dist) = sorted_dots.pop().unwrap();
-    let (c, cd) = sorted_dots.pop().unwrap();
+    let (_, cd) = sorted_dots.pop().unwrap();
     if c_dist == cd { None } else { Some(closest) }
 }
 
@@ -98,15 +90,13 @@ fn main() -> std::io::Result<()> {
         .filter_map(|x| x.ok().map(|l| get_coords(l)))
         .map(|c| Dot::from(c))
         .collect();
-    for d in dots.iter() {
-        println!("{:?}", d);
-    }
     let coords = dots.iter().map(|d| (d.x,d.y)).collect();
     dots.iter_mut().for_each(|d| d.set_extreme(&coords));
     let max_x = dots.iter().max_by_key(|d| d.x).map(|d| d.x).unwrap() as usize;
     let max_y = dots.iter().max_by_key(|d| d.y).map(|d| d.y).unwrap() as usize;
     let min_x = dots.iter().min_by_key(|d| d.x).map(|d| d.x).unwrap() as usize;
     let min_y = dots.iter().min_by_key(|d| d.y).map(|d| d.y).unwrap() as usize;
+
     let mut matrix = vec![];
     for i in 0..(max_x - min_x) {
         matrix.push(vec![]);
@@ -114,6 +104,7 @@ fn main() -> std::io::Result<()> {
             matrix[i].push(closest(((i + min_x) as i16, (j + min_y) as i16), &dots[..]));
         }
     }
+    /*
     for line in matrix.iter() {
         for d in line.iter() {
             match d {
@@ -123,6 +114,7 @@ fn main() -> std::io::Result<()> {
         }
         print!("\n");
     }
+    */
     let counts = matrix.iter()
         .flat_map(|l| l.iter())
         .filter_map(|d| *d)
@@ -138,5 +130,16 @@ fn main() -> std::io::Result<()> {
             break;
         };
     }
+
+    let mut count = 0;
+    for i in min_x..max_x {
+        for j in min_y..max_y {
+            let (x, y) = (i as i16, j as i16);
+            if dots.iter().map(|d| manhattan_dist((x, y), d)).sum::<i16>() < 10_000 {
+                count += 1;
+            }
+        }
+    }
+    println!("area: {}", count);
     Ok(())
 }
