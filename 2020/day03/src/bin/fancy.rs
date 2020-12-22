@@ -93,7 +93,7 @@ fn main() -> io::Result<()> {
         ALGORITHMS
             .iter()
             .map(|alg| run_algorithm(&map, *alg))
-            .fold(1, |x, acc| x * acc)
+            .product::<usize>()
     );
     Ok(())
 }
